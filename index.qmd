@@ -91,8 +91,18 @@ TODO: Explain whether the expected value of your account balance after one flip 
 #| label: q1-expected-value-py
 #| echo: true
 
-# TODO: Compute EV after one flip in Python
-# - Show calculation and brief explanation
+initial_balance = 30000
+mult_heads = 1.5
+mult_tails = 0.6
+prob_heads = 0.5
+prob_tails = 0.5
+
+ev_after_one = prob_heads * (mult_heads * initial_balance) + prob_tails * (mult_tails * initial_balance)
+percent_gain = (ev_after_one - initial_balance) / initial_balance
+
+print(f"Expected value after one flip: ${ev_after_one:,.0f}")
+print(f"Gain vs. $30,000: {percent_gain:.1%}")
+print("Explanation: EV = 0.5×(1.5×30,000) + 0.5×(0.6×30,000) = 31,500 → +5%.")
 
 ```
 
@@ -105,9 +115,34 @@ Briefly narrate and visualize what happens to your account balance over the cour
 #| echo: true
 #| fig-cap: "Single simulation path of account balance"
 
-# TODO: Simulate one path from $30,000 over N periods
-# - Make a matplotlib (OO) time-series
-# - Set seed for reproducibility
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
+
+# Set seed for reproducibility
+np.random.seed(25)
+
+initial_balance = 30000
+num_periods = 45  # N periods
+
+# Simulate one path
+wealth_by_period = np.empty(num_periods + 1, dtype=float)
+wealth_by_period[0] = initial_balance
+coin_flips = np.random.randint(0, 2, size=num_periods)  # 1=heads, 0=tails
+
+for period_index in range(1, num_periods + 1):
+    is_heads = coin_flips[period_index - 1] == 1
+    growth_multiplier = 1.5 if is_heads else 0.6
+    wealth_by_period[period_index] = wealth_by_period[period_index - 1] * growth_multiplier
+
+# OO Matplotlib time-series plot
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(range(num_periods + 1), wealth_by_period, marker="o", linewidth=1.6)
+ax.set_xlabel("Period")
+ax.set_ylabel("Balance ($)")
+ax.set_title("Single Simulation Path (seed=25)")
+ax.yaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+ax.grid(True, alpha=0.3)
 
 ```
 
@@ -120,11 +155,56 @@ TODO: Visually and narratively describe the distribution of your account balance
 #| echo: true
 #| fig-cap: "Distribution of final balances across 100 simulations"
 
-# TODO: Run 100 simulations and plot histogram of final balances
-# - Add vertical line at $30,000
-# - Compute mean, median, and P(final > $30,000)
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
+
+# Reproducibility
+np.random.seed(25)
+
+# Game parameters
+initial_balance = 30000
+num_periods = 45  # years to age 75 if starting at ~30
+num_sims = 100
+mult_heads = 1.5
+mult_tails = 0.6
+
+# Vectorized simulation of terminal wealths
+balances = np.full(shape=num_sims, fill_value=initial_balance, dtype=float)
+coin_flips = np.random.randint(0, 2, size=(num_periods, num_sims))  # 1=heads, 0=tails
+for t in range(num_periods):
+    step_mult = np.where(coin_flips[t] == 1, mult_heads, mult_tails)
+    balances *= step_mult
+
+# Store for later sections
+final_balances = balances.copy()
+
+# Summary statistics
+mean_final = float(np.mean(final_balances))
+median_final = float(np.median(final_balances))
+prob_gt_30k = float(np.mean(final_balances > initial_balance))
+
+print(f"Mean final balance: ${mean_final:,.0f}")
+print(f"Median final balance: ${median_final:,.0f}")
+print(f"P(final > $30,000): {prob_gt_30k:.3f}")
+
+# Histogram
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.hist(final_balances, bins=30, color="#4C78A8", alpha=0.9, edgecolor="white")
+ax.axvline(initial_balance, color="#E45756", linestyle="--", linewidth=2, label="$30,000 buy-in")
+ax.axvline(mean_final, color="#72B7B2", linestyle=":", linewidth=2, label=f"Mean = ${mean_final:,.0f}")
+ax.axvline(median_final, color="#F58518", linestyle="-.", linewidth=2, label=f"Median = ${median_final:,.0f}")
+ax.set_xlabel("Final Balance ($)")
+ax.set_ylabel("Count (out of 100)")
+ax.set_title("Final Balances Across 100 Simulations")
+ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))
+ax.xaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+ax.grid(True, alpha=0.25)
+ax.legend(frameon=False)
 
 ```
+
+Based on the 100 simulations, the distribution of terminal balances is highly skewed to the right: a small fraction of runs end extremely high, while many runs end below the buy-in. The mean is pulled up by rare big winners, but the median sits near or below the buy‑in, reflecting that a “typical” run is not spectacular. If your happiness threshold is simply ending above $30,000, the estimated probability above shows how often that happens; whether that’s satisfying depends on your risk tolerance for the many runs that fall short in pursuit of the occasional large upside.
 
 ### 4) Probability Balance > $30,000 at Age 75 (Original Game)
 
@@ -134,8 +214,13 @@ TODO: Report the probability estimate and interpret its practical meaning.
 #| label: q4-prob-original-py
 #| echo: true
 
-# TODO: Using the 100 simulations above, estimate P(final > 30000)
-# - Print numeric result with 3 decimals
+import numpy as np
+
+try:
+    prob_gt_30k_q4 = float(np.mean(final_balances > 30000))
+    print(f"Estimated P(final > $30,000): {prob_gt_30k_q4:.3f}")
+except NameError:
+    print("Run the 100-simulation cell first to compute final_balances.")
 
 ```
 
