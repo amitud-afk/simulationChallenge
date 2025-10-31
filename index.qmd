@@ -39,7 +39,7 @@ You play annually until age 75. Your mission is to analyze outcomes and communic
 
 ### Generative DAG Model (from the source challenge)
 
-The following DAFT diagram shows the generative structure of the investment game over time..
+The following DAFT diagram shows the generative structure of the investment game over time.
 
 ```{python}
 #| echo: false
