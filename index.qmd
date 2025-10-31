@@ -374,6 +374,32 @@ plt.tight_layout(pad=2.5, w_pad=3.5, h_pad=2.0)
  
 What is the Kelly Criterion and how does it relate to the modified strategy?
 
+**What is the Kelly Criterion?**
+
+The Kelly Criterion, developed by John L. Kelly Jr. in 1956, is a mathematical formula that determines the optimal fraction of wealth to bet in order to maximize long-term growth rate. For a bet where you win with probability $p$ and gain a fraction $b$ of your wager, the Kelly fraction is:
+
+$$f^* = \frac{p \cdot b - (1-p)}{b}$$
+
+This formula balances the trade-off between growth potential and risk of ruin. Betting more than the Kelly fraction increases volatility and risk of losing everything, while betting less reduces growth potential.
+
+**Connection to Our Modified Strategy:**
+
+In the original game where the entire balance is at risk with each coin flip:
+- Probability of winning (heads): $p = 0.5$
+- Gain fraction if heads: $b = 0.5$ (50% gain)
+- Loss fraction if tails: The multiplier is 0.6, meaning we lose 40% of our bet
+
+The Kelly fraction would be: $f^* = \frac{0.5 \times 0.5 - 0.5}{0.5} = 0$
+
+This suggests that betting the full balance (100%) is **overbetting** according to Kelly, which explains why the original strategy has such high volatility and many runs ending near zero despite a positive expected value.
+
+Our modified strategy that bets only 25% of the balance each round is much closer to a Kelly-optimal approach, though still an approximation. By reducing the bet fraction from 100% to 25%, we:
+1. **Reduce risk of ruin** by never risking the entire balance
+2. **Improve median outcomes** because we avoid the tail risk of catastrophic losses
+3. **Maintain growth potential** while smoothing out the volatility
+
+The Kelly Criterion helps explain why the modified strategy performs better on median outcomes: it balances the desire for growth with the need to preserve capital, recognizing that compounding only works if you don't go broke.
+
 
 ## Professional Presentation (From Grading TLDR)
 

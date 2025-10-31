@@ -71,6 +71,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -497,6 +526,16 @@ COMPARISON:
 <section id="briefly-explain-your-findings-from-the-previous-step-in-light-of-a-concept-known-as-the-kelly-criterion" class="level3">
 <h3 class="anchored" data-anchor-id="briefly-explain-your-findings-from-the-previous-step-in-light-of-a-concept-known-as-the-kelly-criterion">6) Briefly Explain Your Findings From The Previous Step in Light of A Concept Known as the “Kelly Criterion”</h3>
 <p>What is the Kelly Criterion and how does it relate to the modified strategy?</p>
+<p><strong>What is the Kelly Criterion?</strong></p>
+<p>The Kelly Criterion, developed by John L. Kelly Jr.&nbsp;in 1956, is a mathematical formula that determines the optimal fraction of wealth to bet in order to maximize long-term growth rate. For a bet where you win with probability <span class="math inline">\(p\)</span> and gain a fraction <span class="math inline">\(b\)</span> of your wager, the Kelly fraction is:</p>
+<p><span class="math display">\[f^* = \frac{p \cdot b - (1-p)}{b}\]</span></p>
+<p>This formula balances the trade-off between growth potential and risk of ruin. Betting more than the Kelly fraction increases volatility and risk of losing everything, while betting less reduces growth potential.</p>
+<p><strong>Connection to Our Modified Strategy:</strong></p>
+<p>In the original game where the entire balance is at risk with each coin flip: - Probability of winning (heads): <span class="math inline">\(p = 0.5\)</span> - Gain fraction if heads: <span class="math inline">\(b = 0.5\)</span> (50% gain) - Loss fraction if tails: The multiplier is 0.6, meaning we lose 40% of our bet</p>
+<p>The Kelly fraction would be: <span class="math inline">\(f^* = \frac{0.5 \times 0.5 - 0.5}{0.5} = 0\)</span></p>
+<p>This suggests that betting the full balance (100%) is <strong>overbetting</strong> according to Kelly, which explains why the original strategy has such high volatility and many runs ending near zero despite a positive expected value.</p>
+<p>Our modified strategy that bets only 25% of the balance each round is much closer to a Kelly-optimal approach, though still an approximation. By reducing the bet fraction from 100% to 25%, we: 1. <strong>Reduce risk of ruin</strong> by never risking the entire balance 2. <strong>Improve median outcomes</strong> because we avoid the tail risk of catastrophic losses 3. <strong>Maintain growth potential</strong> while smoothing out the volatility</p>
+<p>The Kelly Criterion helps explain why the modified strategy performs better on median outcomes: it balances the desire for growth with the need to preserve capital, recognizing that compounding only works if you don’t go broke.</p>
 </section>
 </section>
 <section id="professional-presentation-from-grading-tldr" class="level2">
