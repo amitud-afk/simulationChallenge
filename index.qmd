@@ -188,19 +188,37 @@ print(f"Mean final balance: ${mean_final:,.0f}")
 print(f"Median final balance: ${median_final:,.0f}")
 print(f"P(final > $30,000): {prob_gt_30k:.3f}")
 
-# Histogram
-fig, ax = plt.subplots(figsize=(8, 4))
-ax.hist(final_balances, bins=30, color="#4C78A8", alpha=0.9, edgecolor="white")
-ax.axvline(initial_balance, color="#E45756", linestyle="--", linewidth=2, label="$30,000 buy-in")
-ax.axvline(mean_final, color="#72B7B2", linestyle=":", linewidth=2, label=f"Mean = ${mean_final:,.0f}")
-ax.axvline(median_final, color="#F58518", linestyle="-.", linewidth=2, label=f"Median = ${median_final:,.0f}")
-ax.set_xlabel("Final Balance ($)")
-ax.set_ylabel("Count (out of 100)")
-ax.set_title("Final Balances Across 100 Simulations")
+# Create a cleaner histogram with better binning
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Use log scale for x-axis to better visualize the wide range
+bins = np.logspace(np.log10(final_balances.min()), np.log10(final_balances.max()), 20)
+ax.hist(final_balances, bins=bins, color="#4C78A8", alpha=0.85, edgecolor="white", linewidth=1.5)
+
+# Add reference lines
+ax.axvline(initial_balance, color="#E45756", linestyle="--", linewidth=2.5, label=f"Initial: ${initial_balance:,.0f}", zorder=10)
+ax.axvline(mean_final, color="#72B7B2", linestyle=":", linewidth=2.5, label=f"Mean = ${mean_final:,.0f}", zorder=10)
+ax.axvline(median_final, color="#F58518", linestyle="-.", linewidth=2.5, label=f"Median = ${median_final:,.0f}", zorder=10)
+
+# Styling
+ax.set_xlabel("Final Balance ($)", fontsize=12, fontweight='bold')
+ax.set_ylabel("Frequency (Count)", fontsize=12, fontweight='bold')
+ax.set_title("Distribution of Final Balances Across 100 Simulations", fontsize=14, fontweight='bold', pad=15)
+
+# Log scale for better visualization
+ax.set_xscale('log')
+
+# Formatting
 ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))
 ax.xaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
-ax.grid(True, alpha=0.25)
-ax.legend(frameon=False)
+
+# Add grid and legend
+ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.8)
+ax.legend(frameon=True, fancybox=True, shadow=True, fontsize=10, loc='upper right')
+
+# Add a subtle background
+ax.set_facecolor('#FAFAFA')
+fig.patch.set_facecolor('white')
 
 ```
 
@@ -224,21 +242,133 @@ except NameError:
 
 ```
 
-### 5) Modified Strategy (Bet Exactly 50% Each Round)
+### 5) Modified Strategy (Bet Exactly 25% Each Round)
 
 Instead of having the full balance at risk with each coin flip, assume only 25% of your balance is gambled each year. Compare this to the original game. Which is riskier? Which has better upside?
 
 ```{python}
-#| label: q5-modified-50pct-py
+#| label: q5-modified-25pct-py
 #| echo: true
-#| fig-cap: "Modified strategy distribution (bet 50% each round)"
+#| fig-cap: "Modified strategy distribution (bet 25% each round)"
 
-# TODO: Implement the modified game
-# - Run 100 simulations; plot distribution of final balances
-# - Estimate P(final > 30000) and compare to original
-# - visually compare the outcome distributions of the original and modified strategies
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter, MultipleLocator
+
+# Reproducibility
+np.random.seed(25)
+
+# Game parameters
+initial_balance = 30000
+num_periods = 45
+num_sims = 100
+mult_heads = 1.5
+mult_tails = 0.6
+bet_fraction = 0.25  # Only 25% of balance is gambled each year
+
+# Modified strategy: only bet 25% of balance each period
+balances_modified = np.full(shape=num_sims, fill_value=initial_balance, dtype=float)
+coin_flips = np.random.randint(0, 2, size=(num_periods, num_sims))
+
+for t in range(num_periods):
+    # Calculate gamble amount and safe amount
+    gamble_amount = balances_modified * bet_fraction
+    safe_amount = balances_modified * (1 - bet_fraction)
+    
+    # Apply multiplier to gamble amount only
+    is_heads = coin_flips[t] == 1
+    step_mult = np.where(is_heads, mult_heads, mult_tails)
+    
+    # New balance = safe amount + (gamble amount × multiplier)
+    balances_modified = safe_amount + (gamble_amount * step_mult)
+
+# Summary statistics
+mean_final_modified = float(np.mean(balances_modified))
+median_final_modified = float(np.median(balances_modified))
+prob_gt_30k_modified = float(np.mean(balances_modified > initial_balance))
+prob_gt_300k_modified = float(np.mean(balances_modified > 300000))
+
+# Comparison with original
+prob_gt_30k_original = float(np.mean(final_balances > initial_balance))
+prob_gt_300k_original = float(np.mean(final_balances > 300000))
+
+print("MODIFIED STRATEGY (25% bet fraction):")
+print(f"  Mean final balance: ${mean_final_modified:,.0f}")
+print(f"  Median final balance: ${median_final_modified:,.0f}")
+print(f"  P(final > $30,000): {prob_gt_30k_modified:.3f}")
+print(f"  P(final > $300,000): {prob_gt_300k_modified:.3f}")
+print()
+print("ORIGINAL STRATEGY (100% bet fraction):")
+print(f"  Mean final balance: ${np.mean(final_balances):,.0f}")
+print(f"  Median final balance: ${np.median(final_balances):,.0f}")
+print(f"  P(final > $30,000): {prob_gt_30k_original:.3f}")
+print(f"  P(final > $300,000): {prob_gt_300k_original:.3f}")
+print()
+print("COMPARISON:")
+print(f"  P(> $30k) change: {prob_gt_30k_modified:.3f} vs {prob_gt_30k_original:.3f} (Δ = {prob_gt_30k_modified - prob_gt_30k_original:+.3f})")
+print(f"  P(> $300k) change: {prob_gt_300k_modified:.3f} vs {prob_gt_300k_original:.3f} (Δ = {prob_gt_300k_modified - prob_gt_300k_original:+.3f})")
+print()
+print(f"  Median ratio: {median_final_modified / np.median(final_balances):.2f}x")
+
+# Side-by-side comparison plot with cleaner styling and no overlaps
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+# Create bins for each plot
+min_balance = min(final_balances.min(), balances_modified.min())
+max_balance = max(final_balances.max(), balances_modified.max())
+bins_log = np.logspace(np.log10(max(min_balance, 1)), np.log10(max_balance), 25)  # For original strategy
+
+# For modified strategy, create finer bins based on data range
+balances_modified_min = balances_modified.min()
+balances_modified_max = balances_modified.max()
+# Use adaptive bins - more bins for better resolution
+bins_linear = np.linspace(balances_modified_min, balances_modified_max, 30)
+
+# Original strategy
+n1, bins1, patches1 = ax1.hist(final_balances, bins=bins_log, color="#4C78A8", alpha=0.8, 
+                               edgecolor="white", linewidth=1.2, zorder=1)
+ax1.axvline(initial_balance, color="#E45756", linestyle="--", linewidth=2.5, 
+            label=f"Initial: ${initial_balance:,.0f}", zorder=5)
+ax1.axvline(np.mean(final_balances), color="#72B7B2", linestyle=":", linewidth=2.5, 
+            label=f"Mean = ${np.mean(final_balances):,.0f}", zorder=5)
+ax1.axvline(np.median(final_balances), color="#F58518", linestyle="-.", linewidth=2.5, 
+            label=f"Median = ${np.median(final_balances):,.0f}", zorder=5)
+ax1.set_xlabel("Final Balance ($)", fontsize=12, fontweight='bold')
+ax1.set_ylabel("Frequency", fontsize=12, fontweight='bold')
+ax1.set_title("Original Strategy (100% at risk)", fontsize=13, fontweight='bold', pad=15)
+ax1.set_xscale('log')
+ax1.xaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+ax1.grid(True, alpha=0.3, linestyle='--', linewidth=0.8, zorder=0)
+ax1.legend(frameon=True, fancybox=True, shadow=True, fontsize=9, 
+          loc='upper left', framealpha=0.95, edgecolor='gray')
+ax1.set_facecolor('#FAFAFA')
+ax1.tick_params(labelsize=10)
+
+# Modified strategy
+n2, bins2, patches2 = ax2.hist(balances_modified, bins=bins_linear, color="#E64B35", alpha=0.8, 
+                               edgecolor="white", linewidth=1.2, zorder=1)
+ax2.axvline(initial_balance, color="#E45756", linestyle="--", linewidth=2.5, 
+            label=f"Initial: ${initial_balance:,.0f}", zorder=5)
+ax2.axvline(mean_final_modified, color="#72B7B2", linestyle=":", linewidth=2.5, 
+            label=f"Mean = ${mean_final_modified:,.0f}", zorder=5)
+ax2.axvline(median_final_modified, color="#F58518", linestyle="-.", linewidth=2.5, 
+            label=f"Median = ${median_final_modified:,.0f}", zorder=5)
+ax2.set_xlabel("Final Balance ($)", fontsize=12, fontweight='bold')
+ax2.set_ylabel("Frequency", fontsize=12, fontweight='bold')
+ax2.set_title("Modified Strategy (25% at risk)", fontsize=13, fontweight='bold', pad=15)
+ax2.xaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+ax2.grid(True, alpha=0.3, linestyle='--', linewidth=0.8, zorder=0)
+ax2.legend(frameon=True, fancybox=True, shadow=True, fontsize=9, 
+          loc='upper right', framealpha=0.95, edgecolor='gray')
+ax2.set_facecolor('#FAFAFA')
+ax2.tick_params(labelsize=10)
+
+fig.patch.set_facecolor('white')
+plt.tight_layout(pad=2.5, w_pad=3.5, h_pad=2.0)
 
 ```
+
+**Findings:** The modified strategy (25% bet fraction) dramatically reduces volatility while sacrificing extreme upside potential. By keeping 75% of the balance safe each period, the modified strategy achieves higher median and mean outcomes, and substantially increases the probability of ending above the buy-in. However, the most extreme "jackpot" outcomes are far less likely since only a fraction of wealth is exposed to the high-risk, high-reward coin flips. The original strategy is riskier in terms of both downside (more runs end near zero) and upside (rare massive wins), while the modified strategy offers a more consistent, predictable wealth-building path.
 
 ### 6) Briefly Explain Your Findings From The Previous Step in Light of A Concept Known as the "Kelly Criterion"
  
