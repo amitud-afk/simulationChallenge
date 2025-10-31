@@ -89,7 +89,7 @@ TODO: Explain whether the expected value of your account balance after one flip 
 
 ```{python}
 #| label: q1-expected-value-py
-#| echo: true
+#| echo: false
 
 initial_balance = 30000
 mult_heads = 1.5
@@ -112,7 +112,7 @@ Briefly narrate and visualize what happens to your account balance over the cour
 
 ```{python}
 #| label: q2-single-sim-py
-#| echo: true
+#| echo: false
 #| fig-cap: "Single simulation path of account balance"
 
 import numpy as np
@@ -152,7 +152,7 @@ TODO: Visually and narratively describe the distribution of your account balance
 
 ```{python}
 #| label: q3-dist-100-py
-#| echo: true
+#| echo: false
 #| fig-cap: "Distribution of final balances across 100 simulations"
 
 import numpy as np
@@ -230,7 +230,7 @@ TODO: Report the probability estimate and interpret its practical meaning.
 
 ```{python}
 #| label: q4-prob-original-py
-#| echo: true
+#| echo: false
 
 import numpy as np
 
@@ -248,7 +248,7 @@ Instead of having the full balance at risk with each coin flip, assume only 25% 
 
 ```{python}
 #| label: q5-modified-25pct-py
-#| echo: true
+#| echo: false
 #| fig-cap: "Modified strategy distribution (bet 25% each round)"
 
 import numpy as np
